@@ -1,0 +1,718 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+  <title>Pembagi Kelompok Adil Berbasis Nilai | Smart Grouping</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: system-ui, 'Segoe UI', 'Poppins', 'Inter', -apple-system, BlinkMacSystemFont, 'Roboto', sans-serif;
+    }
+
+    body {
+      background: linear-gradient(145deg, #e0eafc 0%, #cfdef3 100%);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 1.5rem;
+      margin: 0;
+    }
+
+    /* Kartu utama */
+    .card {
+      max-width: 1300px;
+      width: 100%;
+      background: rgba(255, 255, 255, 0.96);
+      backdrop-filter: blur(0px);
+      border-radius: 2.5rem;
+      box-shadow: 0 25px 45px -12px rgba(0, 0, 0, 0.35), 0 2px 8px rgba(0, 0, 0, 0.05);
+      overflow: hidden;
+      transition: all 0.2s;
+    }
+
+    /* Header */
+    .header {
+      background: #1e2a3e;
+      padding: 1.6rem 2rem;
+      color: white;
+    }
+
+    .header h1 {
+      margin: 0;
+      font-size: 1.85rem;
+      font-weight: 600;
+      letter-spacing: -0.3px;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+
+    .header h1::before {
+      content: "👥";
+      font-size: 1.8rem;
+    }
+
+    .sub {
+      margin-top: 0.5rem;
+      opacity: 0.8;
+      font-size: 0.9rem;
+    }
+
+    /* area dua kolom responsive */
+    .flex-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1.8rem;
+      padding: 2rem 2rem 1.8rem;
+    }
+
+    .panel-kontrol {
+      flex: 1.2;
+      min-width: 260px;
+      background: #f8fafc;
+      border-radius: 1.8rem;
+      padding: 1.5rem;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+      border: 1px solid #e2edf2;
+    }
+
+    .panel-hasil {
+      flex: 2.5;
+      min-width: 300px;
+    }
+
+    /* form group */
+    .form-group {
+      margin-bottom: 1.5rem;
+    }
+
+    label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 600;
+      color: #0f2b3d;
+      margin-bottom: 8px;
+      font-size: 0.9rem;
+    }
+
+    label i {
+      font-style: normal;
+      font-size: 1.2rem;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 12px 14px;
+      border-radius: 1.2rem;
+      border: 1.5px solid #cbd5e1;
+      background: white;
+      font-size: 1rem;
+      transition: 0.2s;
+      outline: none;
+    }
+
+    input:focus {
+      border-color: #2c7da0;
+      box-shadow: 0 0 0 3px rgba(44, 125, 160, 0.2);
+    }
+
+    button {
+      background: #2c7da0;
+      color: white;
+      border: none;
+      padding: 12px 16px;
+      border-radius: 2rem;
+      font-weight: 600;
+      font-size: 1rem;
+      cursor: pointer;
+      width: 100%;
+      transition: 0.2s;
+      margin-top: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    button:hover {
+      background: #1f5e7a;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 12px rgba(0,0,0,0.1);
+    }
+
+    .btn-secondary {
+      background: #475569;
+      margin-top: 12px;
+    }
+    .btn-secondary:hover {
+      background: #334155;
+    }
+
+    /* area nilai siswa */
+    .siswa-grid {
+      background: white;
+      border-radius: 1.5rem;
+      padding: 1rem;
+      border: 1px solid #e2edf2;
+      margin-bottom: 1.2rem;
+    }
+
+    .judul-section {
+      font-weight: 700;
+      color: #0f2b3d;
+      margin-bottom: 1rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .dynamic-inputs {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      max-height: 340px;
+      overflow-y: auto;
+      padding-right: 6px;
+    }
+
+    .student-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: #f9fefc;
+      padding: 8px 12px;
+      border-radius: 60px;
+      border: 1px solid #dceaf0;
+    }
+
+    .student-name {
+      flex: 2;
+      font-weight: 500;
+      background: #eef3f7;
+      border: none;
+      border-radius: 40px;
+      padding: 8px 12px;
+      font-size: 0.85rem;
+    }
+
+    .student-score {
+      flex: 1;
+      width: 85px;
+      border-radius: 40px;
+      padding: 8px 10px;
+      text-align: center;
+      font-weight: 500;
+    }
+
+    .remove-icon {
+      background: none;
+      border: none;
+      font-size: 1.3rem;
+      cursor: pointer;
+      color: #a0aec0;
+      width: 32px;
+      padding: 0;
+      margin: 0;
+      transition: 0.1s;
+    }
+    .remove-icon:hover {
+      color: #c0392b;
+      transform: scale(1.1);
+      background: none;
+    }
+
+    .info-badge {
+      background: #eef2ff;
+      border-radius: 28px;
+      padding: 8px 14px;
+      font-size: 0.8rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: #1e2a3e;
+    }
+
+    /* hasil kelompok */
+    .group-results {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1.2rem;
+      margin-top: 1rem;
+    }
+
+    .group-card {
+      background: white;
+      border-radius: 1.5rem;
+      flex: 1 1 240px;
+      box-shadow: 0 8px 18px rgba(0, 0, 0, 0.05);
+      border: 1px solid #dee9ef;
+      overflow: hidden;
+      transition: 0.1s;
+    }
+
+    .group-header {
+      background: #1e2a3e;
+      padding: 12px 16px;
+      color: white;
+      font-weight: bold;
+      font-size: 1.2rem;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .group-body {
+      padding: 12px 14px;
+    }
+
+    .member-list {
+      list-style: none;
+      padding: 0;
+      margin: 0 0 12px 0;
+    }
+
+    .member-list li {
+      padding: 6px 0;
+      border-bottom: 1px dashed #e2e8f0;
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.9rem;
+    }
+
+    .member-name {
+      font-weight: 500;
+    }
+
+    .member-score {
+      background: #eef2ff;
+      border-radius: 20px;
+      padding: 2px 8px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+
+    .group-stats {
+      font-size: 0.75rem;
+      background: #f1f5f9;
+      padding: 8px;
+      border-radius: 1rem;
+      text-align: center;
+      margin-top: 8px;
+      font-weight: 500;
+    }
+
+    .error-text {
+      color: #c0392b;
+      background: #ffe6e5;
+      border-radius: 40px;
+      padding: 10px 15px;
+      font-size: 0.85rem;
+      margin-top: 12px;
+    }
+
+    hr {
+      margin: 1rem 0;
+    }
+
+    @media (max-width: 760px) {
+      .flex-container {
+        padding: 1rem;
+      }
+      .student-row {
+        flex-wrap: wrap;
+        border-radius: 1.2rem;
+      }
+      .student-name, .student-score {
+        width: 100%;
+        flex: auto;
+      }
+      .remove-icon {
+        align-self: flex-end;
+      }
+    }
+    footer {
+      text-align: center;
+      font-size: 0.7rem;
+      padding: 1rem 2rem 1.5rem;
+      color: #5a6e7c;
+      border-top: 1px solid #e2edf2;
+    }
+  </style>
+</head>
+<body>
+
+<div class="card">
+  <div class="header">
+    <h1>⚖️ Pembagian Kelompok Adil</h1>
+    <div class="sub">Berdasarkan nilai siswa | Metode pemetaan merata (rata-rata kelompok minimal berbeda)</div>
+  </div>
+
+  <div class="flex-container">
+    <!-- Panel kiri: konfigurasi & input data siswa -->
+    <div class="panel-kontrol">
+      <div class="form-group">
+        <label><i>🧑‍🎓</i> Jumlah Siswa</label>
+        <input type="number" id="jumlahSiswa" min="2" max="40" value="8" step="1">
+      </div>
+      <div class="form-group">
+        <label><i>📚</i> Jumlah Kelompok</label>
+        <input type="number" id="jumlahKelompok" min="1" max="20" value="3" step="1">
+      </div>
+      <button id="buatInputBtn">✏️ Buat / Reset Daftar Siswa</button>
+      
+      <div class="siswa-grid" id="siswaInputArea" style="margin-top: 20px;">
+        <div class="judul-section">
+          <span>📋 Data Nama & Nilai</span>
+          <span class="info-badge">⭐ Nilai 0-100</span>
+        </div>
+        <div id="siswaDynamicContainer" class="dynamic-inputs">
+          <!-- input dinamis muncul disini -->
+        </div>
+        <button id="acakNilaiBtn" class="btn-secondary" style="margin-top: 12px;">🎲 Isi Contoh / Acak Nilai</button>
+      </div>
+      <button id="bagiKelompokBtn" style="background: #2c7da0; margin-top: 10px;">✨ BAGIKAN KELOMPOK SECARA ADIL ✨</button>
+      <div id="errorMessage" style="font-size: 0.8rem; margin-top: 12px;"></div>
+    </div>
+
+    <!-- Panel kanan: hasil kelompok -->
+    <div class="panel-hasil">
+      <div class="judul-section">
+        <span>🏆 Hasil Pembagian Kelompok (Rata-rata Nilai Merata)</span>
+        <span id="infoRataGlobal" class="info-badge">⚖️</span>
+      </div>
+      <div id="hasilKelompokWrapper" style="background: #f1f5f9; border-radius: 1.5rem; padding: 1rem; min-height: 320px;">
+        <div id="kelompokContainer" class="group-results">
+          <!-- kelompok ditampilkan disini setelah klik -->
+          <div style="text-align: center; width:100%; padding: 2rem; color:#6c7a89;">👈 Silakan atur jumlah siswa & kelompok, lalu klik "BAGIKAN KELOMPOK"</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <footer>
+    Algoritma: sort nilai descending & distribusi round-robin adil dari tertinggi ke terendah ✨ setiap kelompok dapat keseimbangan nilai.
+  </footer>
+</div>
+
+<script>
+  // elemen utama
+  const jumlahSiswaInput = document.getElementById('jumlahSiswa');
+  const jumlahKelompokInput = document.getElementById('jumlahKelompok');
+  const buatBtn = document.getElementById('buatInputBtn');
+  const acakNilaiBtn = document.getElementById('acakNilaiBtn');
+  const bagiBtn = document.getElementById('bagiKelompokBtn');
+  const siswaContainer = document.getElementById('siswaDynamicContainer');
+  const kelompokContainer = document.getElementById('kelompokContainer');
+  const errorMsgDiv = document.getElementById('errorMessage');
+  const infoRataGlobalSpan = document.getElementById('infoRataGlobal');
+
+  // state: menyimpan data siswa [{nama, nilai}]
+  let studentsData = [];
+
+  // fungsi render input dinamis berdasarkan jumlah siswa
+  function renderStudentInputs() {
+    const jumlah = parseInt(jumlahSiswaInput.value, 10);
+    if (isNaN(jumlah) || jumlah < 1) {
+      siswaContainer.innerHTML = `<div class="error-text">⚠️ Jumlah siswa minimal 1</div>`;
+      return;
+    }
+    // sesuaikan panjang array studentsData
+    while (studentsData.length < jumlah) {
+      const newId = studentsData.length + 1;
+      studentsData.push({ nama: `Siswa ${newId}`, nilai: 75 }); // nilai default
+    }
+    while (studentsData.length > jumlah) {
+      studentsData.pop();
+    }
+
+    // generate html input
+    let html = '';
+    for (let i = 0; i < studentsData.length; i++) {
+      html += `
+        <div class="student-row" data-index="${i}">
+          <input type="text" class="student-name" value="${escapeHtml(studentsData[i].nama)}" placeholder="Nama siswa" data-field="nama" data-idx="${i}">
+          <input type="number" class="student-score" value="${studentsData[i].nilai}" step="1" min="0" max="100" placeholder="Nilai" data-field="nilai" data-idx="${i}">
+          <button class="remove-icon" data-removeidx="${i}" title="Hapus siswa">✖️</button>
+        </div>
+      `;
+    }
+    siswaContainer.innerHTML = html;
+
+    // attach event listeners untuk input dynamic
+    document.querySelectorAll('.student-name').forEach(inp => {
+      inp.addEventListener('change', (e) => {
+        const idx = parseInt(inp.dataset.idx, 10);
+        if (!isNaN(idx) && studentsData[idx]) studentsData[idx].nama = inp.value;
+      });
+    });
+    document.querySelectorAll('.student-score').forEach(inp => {
+      inp.addEventListener('change', (e) => {
+        const idx = parseInt(inp.dataset.idx, 10);
+        let newVal = parseFloat(inp.value);
+        if (isNaN(newVal)) newVal = 0;
+        newVal = Math.min(100, Math.max(0, newVal));
+        if (!isNaN(idx) && studentsData[idx]) studentsData[idx].nilai = newVal;
+        inp.value = newVal;
+      });
+    });
+    document.querySelectorAll('.remove-icon').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const idx = parseInt(btn.dataset.removeidx, 10);
+        if (!isNaN(idx) && studentsData.length > 1) {
+          studentsData.splice(idx, 1);
+          jumlahSiswaInput.value = studentsData.length;
+          renderStudentInputs();
+          // clear hasil karena data berubah
+          clearGroupResults();
+        } else if (studentsData.length <= 1) {
+          showTemporaryError("Minimal harus ada 1 siswa, tidak bisa hapus semua.");
+        }
+      });
+    });
+  }
+
+  // fungsi mengacak nilai (contoh acak antara 40 - 100) dan juga memberi nama standar jika diperlukan
+  function randomizeScores() {
+    for (let i = 0; i < studentsData.length; i++) {
+      let randomScore = Math.floor(Math.random() * (100 - 40 + 1) + 40);
+      studentsData[i].nilai = randomScore;
+      if (!studentsData[i].nama || studentsData[i].nama.trim() === "") {
+        studentsData[i].nama = `Siswa ${i+1}`;
+      }
+    }
+    renderStudentInputs();   // refresh tampilan input
+    clearGroupResults();
+    showTemporaryError("✨ Nilai siswa telah diacak (40-100). Klik bagikan kelompok!", false);
+  }
+
+  // fungsi untuk membersihkan tampilan hasil kelompok
+  function clearGroupResults() {
+    kelompokContainer.innerHTML = `<div style="text-align: center; width:100%; padding: 2rem; color:#6c7a89;">⚡ Data berubah, silakan klik 'Bagikan Kelompok' lagi ⚡</div>`;
+    infoRataGlobalSpan.innerHTML = '⚖️';
+  }
+
+  function showTemporaryError(msg, isError = true) {
+    errorMsgDiv.innerHTML = `<div class="${isError ? 'error-text' : 'info-badge'}" style="margin:0;">${msg}</div>`;
+    setTimeout(() => {
+      if (errorMsgDiv.innerHTML.includes(msg)) errorMsgDiv.innerHTML = '';
+    }, 2800);
+  }
+
+  // Core algorithm: pembagian kelompok adil berdasarkan nilai
+  // metode: sort siswa desc by nilai, lalu distribusi round-robin ke kelompok
+  // tetapi dengan arah bolak-balik untuk menjaga keseimbangan (serpentine)
+  // karena round robin biasa saja sudah cukup merata, namun ditambah fine-tune sedikit: 
+  // kita akan lakukan round robin biasa setelah sorting descending, kelompok dengan indeks lebih kecil menerima nilai lebih tinggi,
+  // diakhir akan terdistribusi merata.
+  // Untuk lebih fair, kita gunakan teknik: setiap iterasi assign ke grup dengan total nilai terendah saat ini (greedy balancing)
+  // lebih akurat dalam pemerataan! Pilih metode "Balanced Greedy" yang populer.
+  function distributeFairGroups(students, numGroups) {
+    if (numGroups <= 0) return [];
+    if (students.length === 0) return [];
+    // clone siswa agar tidak merusak data asli
+    let sorted = [...students].sort((a,b) => b.nilai - a.nilai);
+    // inisialisasi groups: array of { members: [], totalNilai: 0 }
+    let groups = Array(numGroups).fill().map(() => ({ members: [], totalNilai: 0 }));
+    
+    // Algoritma greedy: untuk setiap siswa (dari tertinggi ke terendah) masukkan ke grup dengan total nilai paling kecil
+    // ini menjamin keseimbangan akhir nilai antar grup.
+    for (let student of sorted) {
+      // cari grup dengan total terkecil
+      let minGroupIndex = 0;
+      for (let i = 1; i < groups.length; i++) {
+        if (groups[i].totalNilai < groups[minGroupIndex].totalNilai) {
+          minGroupIndex = i;
+        }
+      }
+      groups[minGroupIndex].members.push({ ...student });
+      groups[minGroupIndex].totalNilai += student.nilai;
+    }
+    return groups;
+  }
+
+  // Fungsi utama menampilkan hasil kelompok dengan data studentsData & jumlahKelompok
+  function renderGroupResults() {
+    // Validasi
+    const nSiswa = studentsData.length;
+    let nKel = parseInt(jumlahKelompokInput.value, 10);
+    if (isNaN(nKel) || nKel < 1) nKel = 1;
+    if (nSiswa === 0) {
+      kelompokContainer.innerHTML = `<div class="error-text" style="width:100%;">⚠️ Tidak ada data siswa. Masukkan jumlah siswa dan klik 'Buat / Reset Daftar'</div>`;
+      infoRataGlobalSpan.innerHTML = '⚠️ 0 siswa';
+      return;
+    }
+    if (nKel > nSiswa) {
+      kelompokContainer.innerHTML = `<div class="error-text" style="width:100%;">⚠️ Jumlah kelompok (${nKel}) melebihi jumlah siswa (${nSiswa}). Maksimal kelompok = jumlah siswa.</div>`;
+      infoRataGlobalSpan.innerHTML = '⚠️ Kelompok > siswa';
+      return;
+    }
+
+    // validasi nilai tidak kosong, semua siswa punya nilai ok
+    for (let i = 0; i < studentsData.length; i++) {
+      if (isNaN(studentsData[i].nilai)) studentsData[i].nilai = 0;
+      studentsData[i].nilai = Math.min(100, Math.max(0, studentsData[i].nilai));
+    }
+
+    const groups = distributeFairGroups(studentsData, nKel);
+    // statistik global rata-rata semua siswa
+    let totalSemua = studentsData.reduce((sum, s) => sum + s.nilai, 0);
+    let rataGlobal = (totalSemua / studentsData.length).toFixed(1);
+    infoRataGlobalSpan.innerHTML = `📊 Rata-rata total: ${rataGlobal}`;
+
+    // Tampilkan setiap kelompok
+    if (!groups.length) {
+      kelompokContainer.innerHTML = `<div class="error-text">Gagal membentuk kelompok</div>`;
+      return;
+    }
+
+    let groupHtml = '';
+    for (let g = 0; g < groups.length; g++) {
+      const group = groups[g];
+      const memberCount = group.members.length;
+      const avgGroup = memberCount > 0 ? (group.totalNilai / memberCount).toFixed(1) : '0';
+      groupHtml += `
+        <div class="group-card">
+          <div class="group-header">
+            <span>👥 Kelompok ${g+1}</span>
+            <span>📊 ${avgGroup}</span>
+          </div>
+          <div class="group-body">
+            <ul class="member-list">
+              ${group.members.map(m => `<li><span class="member-name">${escapeHtml(m.nama)}</span><span class="member-score">${m.nilai}</span></li>`).join('')}
+            </ul>
+            <div class="group-stats">
+              🧑‍🎓 ${memberCount} orang | Total nilai: ${group.totalNilai} | Rata-rata: ${avgGroup}
+            </div>
+          </div>
+        </div>
+      `;
+    }
+    kelompokContainer.innerHTML = groupHtml;
+    // tambahan info pemerataan jika lebih dari 1 kelompok:
+    if (groups.length > 1) {
+      let avgValues = groups.map(g => g.members.length ? (g.totalNilai / g.members.length) : 0);
+      let maxAvg = Math.max(...avgValues);
+      let minAvg = Math.min(...avgValues);
+      let selisih = (maxAvg - minAvg).toFixed(1);
+      let infoTambahan = document.createElement('div');
+      if (kelompokContainer.parentNode) {
+        // menampilkan di atas hasil bisa tapi biarkan
+        let existingInfo = document.getElementById('fairnessInfo');
+        if (!existingInfo) {
+          let fairDiv = document.createElement('div');
+          fairDiv.id = 'fairnessInfo';
+          fairDiv.style.cssText = 'background:#e6f4ea; border-radius: 1.5rem; padding: 8px 16px; margin-top: 12px; text-align:center; font-size:0.8rem; font-weight:500;';
+          fairDiv.innerHTML = `📉 Selisih rata-rata antar kelompok: ${selisih} poin (semakin kecil semakin adil) ✅`;
+          kelompokContainer.parentNode.appendChild(fairDiv);
+        } else {
+          existingInfo.innerHTML = `📉 Selisih rata-rata antar kelompok: ${selisih} poin (semakin kecil semakin adil) ✅`;
+        }
+      }
+    } else {
+      let existing = document.getElementById('fairnessInfo');
+      if(existing) existing.remove();
+    }
+  }
+
+  // fungsi untuk reset dari jumlah siswa/generate data baru
+  function resetAndRebuild() {
+    let newCount = parseInt(jumlahSiswaInput.value, 10);
+    if (isNaN(newCount) || newCount < 1) newCount = 2;
+    jumlahSiswaInput.value = newCount;
+    let newGroupCount = parseInt(jumlahKelompokInput.value, 10);
+    if (isNaN(newGroupCount) || newGroupCount < 1) newGroupCount = 1;
+    jumlahKelompokInput.value = newGroupCount;
+    // rebuild studentsData
+    studentsData = [];
+    for (let i = 0; i < newCount; i++) {
+      studentsData.push({ nama: `Siswa ${i+1}`, nilai: 70 + Math.floor(Math.random() * 20) }); // nilai variatif 70-89
+    }
+    renderStudentInputs();
+    clearGroupResults();
+    showTemporaryError(`✅ Data siswa diperbarui (${newCount} siswa). Atur nilai kemudian bagikan.`, false);
+  }
+
+  // Tombol buat / reset: berdasarkan jumlah siswa di input
+  function handleBuildFromCount() {
+    let count = parseInt(jumlahSiswaInput.value, 10);
+    if (isNaN(count) || count < 1) count = 2;
+    jumlahSiswaInput.value = count;
+    studentsData = [];
+    for (let i = 0; i < count; i++) {
+      studentsData.push({ nama: `Siswa ${i+1}`, nilai: 75 });
+    }
+    renderStudentInputs();
+    clearGroupResults();
+    showTemporaryError(`Form siswa direset, jumlah = ${count}`, false);
+  }
+
+  // Event handling
+  buatBtn.addEventListener('click', handleBuildFromCount);
+  acakNilaiBtn.addEventListener('click', () => {
+    if (studentsData.length === 0) {
+      showTemporaryError("Tidak ada data siswa. Klik 'Buat / Reset Daftar Siswa' dulu.");
+      return;
+    }
+    randomizeScores();
+  });
+  bagiBtn.addEventListener('click', () => {
+    if (studentsData.length === 0) {
+      showTemporaryError("Belum ada data siswa, silakan buat daftar siswa terlebih dahulu!");
+      kelompokContainer.innerHTML = `<div class="error-text" style="width:100%;">⚠️ Data siswa kosong</div>`;
+      return;
+    }
+    // validasi jumlah kelompok
+    let nKel = parseInt(jumlahKelompokInput.value, 10);
+    if (isNaN(nKel) || nKel < 1) {
+      jumlahKelompokInput.value = 1;
+      nKel = 1;
+    }
+    if (nKel > studentsData.length) {
+      showTemporaryError(`Jumlah kelompok (${nKel}) tidak boleh lebih dari jumlah siswa (${studentsData.length})!`);
+      return;
+    }
+    renderGroupResults();
+  });
+
+  // agar ketika jumlahKelompok berubah, kita tidak langsung reset tapi bisa langsung bagikan (optional)
+  jumlahKelompokInput.addEventListener('change', () => {
+    clearGroupResults();
+  });
+  jumlahSiswaInput.addEventListener('change', () => {
+    // tidak otomatis rebuild, beri tahu user
+    showTemporaryError("Ubah jumlah siswa lalu klik 'Buat / Reset Daftar Siswa' untuk menerapkan.", false);
+  });
+
+  // inisialisasi awal
+  function init() {
+    let initSiswa = 8;
+    jumlahSiswaInput.value = initSiswa;
+    jumlahKelompokInput.value = 3;
+    studentsData = [];
+    for (let i = 0; i < initSiswa; i++) {
+      studentsData.push({ nama: `Siswa ${i+1}`, nilai: 70 + (i * 3) % 31 });
+    }
+    renderStudentInputs();
+    // langsung tampilkan contoh kelompok agar terlihat adil
+    setTimeout(() => {
+      renderGroupResults();
+    }, 50);
+  }
+
+  function escapeHtml(str) {
+    if(!str) return '';
+    return str.replace(/[&<>]/g, function(m) {
+      if(m === '&') return '&amp;';
+      if(m === '<') return '&lt;';
+      if(m === '>') return '&gt;';
+      return m;
+    });
+  }
+
+  init();
+</script>
+</body>
+</html>
